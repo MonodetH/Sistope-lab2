@@ -2440,7 +2440,11 @@ COMPAT_SYSCALL_DEFINE1(sysinfo, struct compat_sysinfo __user *, info)
  */ 
 asmlinkage int sys_procinfo(int state){
 	struct task_struct *task; // current process
+	const struct cred *cred; // task security context (contains uid)
+
+	struct list_head *list;	// list of process children
 	struct task_struct *taskChild; // current process child
+
 
 	switch(state){
 		case 0:
@@ -2464,7 +2468,9 @@ asmlinkage int sys_procinfo(int state){
 			for_each_process(task) {
 				task_lock(task); // lock task
 
-				printk("Proceso %s\tpid:%i\tuid:%i\n",task->comm,task->pid,task->uid);
+				cred = current_cred();
+
+				printk("Proceso %s\tpid:%i\tuid:%i\n",task->comm,task->pid,cred->uid);
 
 				// iterate children
 				list_for_each(list, &current->children) {
@@ -2483,7 +2489,7 @@ asmlinkage int sys_procinfo(int state){
 
 			// unlock task list
 			rcu_read_unlock();
-			return syscall_get_nr(current, task_pt_regs(current));
+			return 0;
 			break;
 		default:
 			return -1;
