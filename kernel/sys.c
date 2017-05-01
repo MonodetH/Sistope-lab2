@@ -2429,3 +2429,65 @@ COMPAT_SYSCALL_DEFINE1(sysinfo, struct compat_sysinfo __user *, info)
 	return 0;
 }
 #endif /* CONFIG_COMPAT */
+
+/**
+ * This custom syscall lists (stdout) all processes that currently are in the state given as a parameter. 
+ * also lists all its children
+ *
+ * Input: 	int. 	a valid state (0,1,2,4,8,16,32,64,128,256,512,1024,2048,4096)
+ * Output: 	int. 	syscall id on success. 
+ * 					-1 in case of error.
+ */ 
+asmlinkage int sys_procinfo(int state){
+	struct task_struct *task; // current process
+	struct task_struct *taskChild; // current process child
+
+	switch(state){
+		case 0:
+		case 1:
+		case 2:
+		case 4:
+		case 8:
+		case 16:
+		case 32:
+		case 64:
+		case 128:
+		case 256:
+		case 512:
+		case 1024:
+		case 2048:
+		case 4096:
+			// lock task list
+			rcu_read_lock();
+
+			// iterate task list
+			for_each_process(task) {
+				task_lock(task); // lock task
+
+				printk("Proceso %s\tpid:%i\tuid:%i\n",task->comm,task->pid,task->uid);
+
+				// iterate children
+				list_for_each(list, &current->children) {
+					// get child
+				    task = list_entry(list, struct task_struct, sibling);
+
+				    task_lock(taskChild);	// lock child
+
+				    printk("Hijo %s\n",taskChild->comm);
+
+				    task_unlock(taskChild);
+				}
+
+			    task_unlock(task);
+			}
+
+			// unlock task list
+			rcu_read_unlock();
+			return syscall_get_nr(current, task_pt_regs(current));
+			break;
+		default:
+			return -1;
+	}
+
+
+}
