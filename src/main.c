@@ -7,48 +7,55 @@
 #define SYS_procinfo_64 326
 #define SYS_procinfo_32 377
 
-int main(int argc, char const *argv[])
+int main(int argc, char *argv[])
 {
-    int sflag = 0;
-    int svalue = 0;
-    int c;
-    opterr = 0;
+    int statusValue = -1;
+    int archValue = -1;
+    int opt;
+    int salida;
 
-    while((c = getopt(argc, argv, "s:"))!= -1)
-    {
-        switch (c) {
+    while((opt = getopt(argc, argv, "a:s:"))!= -1){
+        switch (opt) {
+            case 'a':
+                if(!sscanf(optarg, "%i", &archValue)){
+                    fprintf (stderr, "ERROR: Argumento de -a no valido, se requiere un entero.\n");
+                    return 1;
+                }
+                break;
             case 's':
-                sscanf(optarg, "%d", &svalue);
-                sflag = 1;
+                if(!sscanf(optarg, "%i", &statusValue)){
+                    fprintf (stderr, "ERROR: Argumento de -s no valido, se requiere un entero.\n");
+                    return 1;
+                }
                 break;
             case '?':
-                if(optopt == 's')
-                {
-                    fprintf(stderr, "Se debe indicar el estado buscado junto al parámetro -%c\n", optopt);
+                if(optopt == 'a'){
+                    fprintf(stderr, "ERROR: La opcion -a debe ser seguida de una arquitectura valida (32 o 64)\n");
                 }
-                else if (isprint(optopt))
-                {
-                    fprintf(stderr, "Opcion desconocida -%c.\n", optopt);
+                else if(optopt == 's'){
+                    fprintf(stderr, "ERROR: La opcion -s debe ser seguida de un estado valido\n");
                 }
-                //	Si el argumento en el que se encuentra el error no se puede imprimir,
-                //	se indica que la opción tiene un caracter desconocido.
-                else
-                {
-                    fprintf(stderr, "Opcion con caracter desconocido `\\x%x'.\n", optopt);
+                else{
+                    fprintf(stderr, "ERROR: Argumentos no validos\n");
                 }
                 return 1;
             default:
-                abort();
+                return 1;
         }
     }
 
-    if(sflag == 0)
-    {
-        fprintf(stderr, "No se ingreso el parametro '-s'\n");
-        return -1;
+    if(archValue == 32){
+        salida = syscall(SYS_procinfo_32, statusValue);
+    }else if(archValue == 64){
+        salida = syscall(SYS_procinfo_64, statusValue);
+    }else{
+        printf("Este programa lista en la salida estandar del kernel todos los procesos con estado s y todos sus hijos\n");
+        printf("Argumentos:\n");
+        printf("-a:\tRecibe la arquitectura de la syscall, puede ser 32 o 64\n");
+        printf("-s:\tRecibe el estado de un proceso, puede ser 0,1,2,4,8,16,32,64,128,256,512,1024,2048 o 4096\n");
     }
 
-    int salida = syscall(SYS_procinfo_64, svalue);
+    printf("La syscall retorno con valor %i\n", salida);
 
     return 0;
 }

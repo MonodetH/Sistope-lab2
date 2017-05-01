@@ -2431,7 +2431,7 @@ COMPAT_SYSCALL_DEFINE1(sysinfo, struct compat_sysinfo __user *, info)
 #endif /* CONFIG_COMPAT */
 
 /**
- * This custom syscall lists (stdout) all processes that currently are in the state given as a parameter. 
+ * This custom syscall lists (kernel-space stdout) all processes that currently are in the state given as a parameter. 
  * also lists all its children
  *
  * Input: 	int. 	a valid state (0,1,2,4,8,16,32,64,128,256,512,1024,2048,4096)
@@ -2470,12 +2470,12 @@ asmlinkage int sys_procinfo(int state){
 
 				cred = current_cred();
 
-				printk("Proceso %s\tpid:%i\tuid:%i\n",task->comm,task->pid,cred->uid);
+				printk("Proceso %s\t\tpid:%i\tuid:%i\n",task->comm,task->pid,cred->uid.value);
 
 				// iterate children
 				list_for_each(list, &current->children) {
 					// get child
-				    task = list_entry(list, struct task_struct, sibling);
+				    taskChild = list_entry(list, struct task_struct, sibling);
 
 				    task_lock(taskChild);	// lock child
 
