@@ -2491,7 +2491,7 @@ asmlinkage int sys_procinfo(int state){
 			rcu_read_unlock();
 
 			// return syscall num for x86_64 arch
-			#ifdef CONFIG_X86_64
+			#ifdef CONFIG_64BIT
 				return 326;
 			#endif
 
