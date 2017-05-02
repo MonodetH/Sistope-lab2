@@ -2470,10 +2470,10 @@ asmlinkage int sys_procinfo(int state){
 
 				cred = current_cred();
 
-				printk("Proceso %s\t\tpid:%i\tuid:%i\n",task->comm,task->pid,cred->uid.value);
+				printk("Proceso %s\t\tpid:%i\tuid:%i\n",task->comm,task->pid,cred->uid.val);
 
 				// iterate children
-				list_for_each(list, &current->children) {
+				list_for_each(list, &task->children) {
 					// get child
 				    taskChild = list_entry(list, struct task_struct, sibling);
 
