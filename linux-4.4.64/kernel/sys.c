@@ -2468,22 +2468,23 @@ asmlinkage int sys_procinfo(int state){
 			for_each_process(task) {
 				task_lock(task); // lock task
 
-				cred = current_cred();
+				if(task->state == state){
+					cred = current_cred();
 
-				printk("Proceso %s\t\tpid:%i\tuid:%i\n",task->comm,task->pid,cred->uid.val);
+					printk("Proceso %s\t\tpid:%i\tuid:%i\n",task->comm,task->pid,cred->uid.val);
 
-				// iterate children
-				list_for_each(list, &task->children) {
-					// get child
-				    taskChild = list_entry(list, struct task_struct, sibling);
+					// iterate children
+					list_for_each(list, &task->children) {
+						// get child
+					    taskChild = list_entry(list, struct task_struct, sibling);
 
-				    task_lock(taskChild);	// lock child
+					    task_lock(taskChild);	// lock child
 
-				    printk("Hijo %s\n",taskChild->comm);
+					    printk("Hijo %s\n",taskChild->comm);
 
-				    task_unlock(taskChild);
+					    task_unlock(taskChild);
+					}
 				}
-
 			    task_unlock(task);
 			}
 
