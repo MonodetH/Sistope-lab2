@@ -384,3 +384,4 @@
 375	i386	membarrier		sys_membarrier
 376	i386	mlock2			sys_mlock2
 377 i386	procinfo		sys_procinfo
+378 i386 	procstate		sys_procstate

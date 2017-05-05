@@ -2468,7 +2468,7 @@ asmlinkage int sys_procinfo(int state){
 			for_each_process(task) {
 				task_lock(task); // lock task
 
-				if(task->state == state){
+				if( ((state == 16 || state == 32) && task->exit_state == state) || task->state == state){
 					cred = current_cred();
 
 					printk("Proceso %s\t\tpid:%i\tuid:%i\n",task->comm,task->pid,cred->uid.val);
@@ -2497,5 +2497,33 @@ asmlinkage int sys_procinfo(int state){
 			return -1;
 	}
 
+}
 
+/**
+ * This custom syscall lists (kernel-space stdout) all processes and their 
+ *
+ * Input: 	none
+ * Output: 	int. 	always 1
+ */ 
+asmlinkage int sys_procstate(int foo){
+	struct task_struct *task; // current process
+
+	// lock task list
+	rcu_read_lock();
+
+	printk("INICIO LISTA PROCESOS\n");
+
+	// iterate task list
+	for_each_process(task) {
+		task_lock(task); // lock task
+
+		printk("Proceso %s\t\tpid:%i\tstate:%i\texit_state:%i\n",task->comm,task->pid, task->state, task->exit_state);
+
+	    task_unlock(task);
+	}
+	printk("FIN LISTA PROCESOS\n");
+
+	// unlock task list
+	rcu_read_unlock();
+	return 1;
 }

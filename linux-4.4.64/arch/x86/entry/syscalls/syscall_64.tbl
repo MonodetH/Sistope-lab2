@@ -333,6 +333,7 @@
 324	common	membarrier		sys_membarrier
 325	common	mlock2			sys_mlock2
 326 common	procinfo		sys_procinfo
+327 common 	procstate		sys_procstate
 
 #
 # x32-specific system call numbers start at 512 to avoid cache impact
